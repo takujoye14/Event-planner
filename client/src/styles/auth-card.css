@@ -1,0 +1,79 @@
+.card {
+  width: 300px;
+  margin: 4rem auto;
+  padding: 2rem;
+  border-radius: 10px;
+  background: #2a2b38;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+/* Headline */
+.title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #ffeba7;
+  margin-bottom: 1.5rem;
+}
+
+/* Input field wrapper */
+.field {
+  display: flex;
+  align-items: center;
+  background: #1f2029;
+  border-radius: 5px;
+  padding: 0.6em 1em;
+  margin-bottom: 1rem;
+}
+
+/* Icon inside the field */
+.input-icon {
+  margin-right: 0.6em;
+  font-size: 1.2em;
+  color: #ffeba7;
+}
+
+/* Input styles */
+.input-field {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 1em;
+  color: #fff;
+}
+
+/* Submit button */
+.btn {
+  width: 100%;
+  padding: 0.6em;
+  margin-top: 0.5em;
+  background-color: #ffeba7;
+  color: #2a2b38;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #5e6681;
+  color: #ffeba7;
+}
+
+/* Link-like button */
+.btn-link {
+  margin-top: 1em;
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 0.9em;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.btn-link:hover {
+  color: #ffeba7;
+}

@@ -44,3 +44,7 @@ dump.rdb
 # MongoDB data files (if using local volume)
 data/db/
 node_modules/
+
+# Vue build
+client/node_modules/
+client/dist/
