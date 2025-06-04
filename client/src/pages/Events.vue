@@ -3,17 +3,15 @@
     <h1 class="page-title">Upcoming Events</h1>
     <div class="events-grid">
       <div
-        v-for="event in dummyEvents"
-        :key="event.id"
+        v-for="event in events"
+        :key="event._id || event.id"
         class="event-card"
       >
-        <img :src="event.image" alt="Event image" class="event-image" />
+        <img :src="event.image || defaultImage" alt="Event image" class="event-image" />
         <div class="event-details">
           <h2 class="event-title">{{ event.title }}</h2>
           <p class="event-description">{{ event.description }}</p>
-          <p class="event-date">
-            📅 {{ event.date }}
-          </p>
+          <p class="event-date">📅 {{ formatDate(event.date) }}</p>
           <button class="event-button">View Details</button>
         </div>
       </div>
@@ -26,30 +24,26 @@ export default {
   name: "Events",
   data() {
     return {
-      dummyEvents: [
-        {
-          id: 1,
-          title: "React Conference 2025",
-          description: "Join us for an exciting day of React and JavaScript talks.",
-          image: "https://via.placeholder.com/400x200",
-          date: "2025-07-15"
-        },
-        {
-          id: 2,
-          title: "Vue.js Summit",
-          description: "Explore the latest features in Vue 3 and best practices.",
-          image: "https://via.placeholder.com/400x200",
-          date: "2025-08-10"
-        },
-        {
-          id: 3,
-          title: "NoSQL Database Workshop",
-          description: "Hands-on session on MongoDB, Redis, and Neo4j.",
-          image: "https://via.placeholder.com/400x200",
-          date: "2025-09-20"
-        }
-      ]
+      events: [],
+      defaultImage: "https://via.placeholder.com/400x200"
     };
+  },
+  methods: {
+    formatDate(date) {
+      if (!date) return "";
+      return new Date(date).toLocaleDateString();
+    }
+  },
+  async mounted() {
+    const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+    try {
+      const res = await fetch(`${base}/events`);
+      if (!res.ok) throw new Error('Failed to fetch events');
+      const data = await res.json();
+      this.events = Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.error('Error loading events:', err);
+    }
   }
 };
 </script>
