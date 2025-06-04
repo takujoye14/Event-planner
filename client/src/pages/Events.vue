@@ -3,16 +3,18 @@
     <h1 class="page-title">Upcoming Events</h1>
     <div class="events-grid">
       <div
-        v-for="event in dummyEvents"
-        :key="event.id"
+        v-for="event in events"
+        :key="event.event_id"
         class="event-card"
       >
-        <img :src="event.image" alt="Event image" class="event-image" />
+        <img :src="getEventImage(event)" alt="Event image" class="event-image" />
         <div class="event-details">
-          <h2 class="event-title">{{ event.title }}</h2>
-          <p class="event-description">{{ event.description }}</p>
+          <h2 class="event-title">{{ event.name || event.title }}</h2>
+          <p class="event-description">
+            {{ event.description || 'No description available.' }}
+          </p>
           <p class="event-date">
-            📅 {{ event.date }}
+            📅 {{ formatDate(event.start_time) || 'Date not available' }}
           </p>
           <button class="event-button">View Details</button>
         </div>
@@ -26,30 +28,33 @@ export default {
   name: "Events",
   data() {
     return {
-      dummyEvents: [
-        {
-          id: 1,
-          title: "React Conference 2025",
-          description: "Join us for an exciting day of React and JavaScript talks.",
-          image: "https://via.placeholder.com/400x200",
-          date: "2025-07-15"
-        },
-        {
-          id: 2,
-          title: "Vue.js Summit",
-          description: "Explore the latest features in Vue 3 and best practices.",
-          image: "https://via.placeholder.com/400x200",
-          date: "2025-08-10"
-        },
-        {
-          id: 3,
-          title: "NoSQL Database Workshop",
-          description: "Hands-on session on MongoDB, Redis, and Neo4j.",
-          image: "https://via.placeholder.com/400x200",
-          date: "2025-09-20"
-        }
-      ]
+      events: []
     };
+  },
+  methods: {
+    fetchEvents() {
+      console.log("🔎 Fetching events from backend...");
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/events`)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("✅ Events fetched from backend:", data);
+          this.events = data;
+        })
+        .catch((error) => {
+          console.error("❌ Failed to fetch events:", error);
+        });
+    },
+    getEventImage(event) {
+      return event.thumbnail || '/assets/default-event.jpg';
+    },
+    formatDate(date) {
+      if (!date) return null;
+      const d = new Date(date);
+      return d.toISOString().split('T')[0];
+    }
+  },
+  mounted() {
+    this.fetchEvents();
   }
 };
 </script>
