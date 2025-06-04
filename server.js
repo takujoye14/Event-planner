@@ -24,7 +24,7 @@ app.use('/api/test', require('./src/routes/test.routes'));
 
 // Import routes
 app.use('/api/users', require('./src/routes/user.routes'));
-// app.use('/api/events', require('./src/routes/event.routes'));
+app.use('/api/events', require('./src/routes/event.routes'));
 // app.use('/api/rsvp', require('./src/routes/rsvp.routes'));
 // app.use('/api/recommend', require('./src/routes/recommend.routes'));
 

@@ -1,38 +1,85 @@
 <template>
-  <div>
-    <h2>➕ Create New Event</h2>
-    <form @submit.prevent="createEvent">
-      <input v-model="event.title" placeholder="Title" />
-      <input v-model="event.date" type="datetime-local" />
-      <input v-model="event.location" placeholder="Location" />
-      <textarea v-model="event.description" placeholder="Description"></textarea>
-      <button type="submit">Submit</button>
+  <div class="create-event-page">
+    <h1 class="page-title">Create New Event</h1>
+    <form @submit.prevent="handleSubmit" class="event-form">
+      <div class="input-group">
+        <input type="text" v-model="title" placeholder="Event Title" required />
+      </div>
+      <div class="input-group">
+        <textarea v-model="description" placeholder="Event Description" required></textarea>
+      </div>
+      <div class="input-group">
+        <input type="date" v-model="date" required />
+      </div>
+      <button type="submit">Create Event</button>
     </form>
+    <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
   </div>
 </template>
 
 <script>
 export default {
+  name: "CreateEvent",
   data() {
     return {
-      event: {
-        title: '',
-        date: '',
-        location: '',
-        description: ''
-      }
-    }
+      title: "",
+      description: "",
+      date: "",
+      successMessage: ""
+    };
   },
   methods: {
-    async createEvent() {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/events`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this.event)
-      })
-      const result = await res.json()
-      alert('Event created: ' + result.title)
+    handleSubmit() {
+      this.successMessage = `Event "${this.title}" created successfully!`;
+      // Later: send POST to backend
     }
   }
-}
+};
 </script>
+
+<style scoped>
+.create-event-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: #f0f0f0;
+}
+
+.page-title {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+}
+
+.event-form .input-group {
+  margin-bottom: 1rem;
+}
+
+.event-form input,
+.event-form textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 6px;
+}
+
+.event-form button {
+  background-color: #f1c40f;
+  color: #1e1e2f;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.event-form button:hover {
+  background-color: #e1b40d;
+}
+
+.success-message {
+  text-align: center;
+  margin-top: 1rem;
+  color: #4caf50;
+}
+</style>
