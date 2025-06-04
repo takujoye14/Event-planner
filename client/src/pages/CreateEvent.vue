@@ -29,9 +29,28 @@ export default {
     };
   },
   methods: {
-    handleSubmit() {
-      this.successMessage = `Event "${this.title}" created successfully!`;
-      // Later: send POST to backend
+        async handleSubmit() {
+      this.successMessage = "";
+      try {
+        const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+        const res = await fetch(`${base}/events`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: this.title,
+            description: this.description,
+            date: this.date
+          })
+        });
+        if (!res.ok) throw new Error("Failed to create event");
+        await res.json();
+        this.successMessage = `Event "${this.title}" created successfully!`;
+        this.title = "";
+        this.description = "";
+        this.date = "";
+      } catch (err) {
+        console.error("Error creating event:", err);
+      }
     }
   }
 };

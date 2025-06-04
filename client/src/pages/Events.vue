@@ -4,7 +4,7 @@
     <div class="events-grid">
       <div
         v-for="event in events"
-        :key="event.event_id"
+        :key="event._id || event.id"
         class="event-card"
       >
         <img :src="getEventImage(event)" alt="Event image" class="event-image" />
@@ -14,7 +14,7 @@
             {{ event.description || 'No description available.' }}
           </p>
           <p class="event-date">
-            📅 {{ formatDate(event.start_time) || 'Date not available' }}
+            📅 {{ formatDate(event.date || event.start_time) }}
           </p>
           <button class="event-button">View Details</button>
         </div>
@@ -28,27 +28,29 @@ export default {
   name: "Events",
   data() {
     return {
-      events: []
+      events: [],
+      defaultImage: "https://via.placeholder.com/400x200"
     };
   },
   methods: {
-    fetchEvents() {
+    async fetchEvents() {
       console.log("🔎 Fetching events from backend...");
-      fetch(`${import.meta.env.VITE_API_BASE_URL}/events`)
-        .then((res) => res.json())
-        .then((data) => {
-          console.log("✅ Events fetched from backend:", data);
-          this.events = data;
-        })
-        .catch((error) => {
-          console.error("❌ Failed to fetch events:", error);
-        });
+      const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+      try {
+        const res = await fetch(`${base}/events`);
+        if (!res.ok) throw new Error('Failed to fetch events');
+        const data = await res.json();
+        console.log("✅ Events fetched from backend:", data);
+        this.events = Array.isArray(data) ? data : [];
+      } catch (err) {
+        console.error('❌ Error loading events:', err);
+      }
     },
     getEventImage(event) {
-      return event.thumbnail || '/assets/default-event.jpg';
+      return event.thumbnail || event.image || this.defaultImage;
     },
     formatDate(date) {
-      if (!date) return null;
+      if (!date) return 'Date not available';
       const d = new Date(date);
       return d.toISOString().split('T')[0];
     }
