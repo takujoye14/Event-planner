@@ -1,60 +1,59 @@
 const https = require('https');
 
 exports.getEvents = (req, res) => {
+  const { q = '', lat, lon } = req.query;  
+
+  const clientId = 'NTA1NjM2NTV8MTc0OTEzMDA2NC4xMDM2MjQ4';
+  const clientSecret = 'e133791522105ec14bdab49e084d035ef0b218b086ee0b7eb1beab430dae90a1';
+
+  let queryParams = `client_id=${clientId}&client_secret=${clientSecret}&per_page=50`;  
+
+  if (q) queryParams += `&q=${encodeURIComponent(q)}`;
+  if (lat && lon) queryParams += `&lat=${lat}&lon=${lon}`;
+
   const options = {
-    method: 'GET',
-    hostname: 'real-time-events-search.p.rapidapi.com',
-    path: '/search-events?query=Concerts%20in%20San-Francisco&date=any&is_virtual=false&start=0',
-    headers: {
-      'x-rapidapi-key': process.env.RAPIDAPI_KEY,
-      'x-rapidapi-host': 'real-time-events-search.p.rapidapi.com'
-    }
+    hostname: 'api.seatgeek.com',
+    port: 443,
+    path: `/2/events?${queryParams}`,
+    method: 'GET'
   };
 
-  const request = https.request(options, (response) => {
+  const apiReq = https.request(options, (apiRes) => {
     let data = '';
-
-    response.on('data', (chunk) => {
+    apiRes.on('data', (chunk) => {
       data += chunk;
     });
-
-    response.on('end', () => {
+    apiRes.on('end', () => {
       try {
-        const parsedData = JSON.parse(data);
-        console.log("RapidAPI Response:", parsedData);
-
-        if (parsedData && parsedData.data) {
-          res.json(parsedData.data); // Send the data array
-        } else {
-          res.json([]);
-        }
-      } catch (error) {
-        console.error("Error parsing API response:", error);
-        res.status(500).json({ error: 'Failed to parse API response' });
+        const jsonData = JSON.parse(data);
+        console.log("SeatGeek API Response:", jsonData);
+        res.json(jsonData.events || []);
+      } catch (err) {
+        console.error("Error parsing SeatGeek response:", err);
+        res.status(500).json({ error: 'Failed to parse SeatGeek response' });
       }
     });
   });
 
-  request.on('error', (error) => {
-    console.error("RapidAPI request error:", error);
-    res.status(500).json({ error: 'Failed to fetch data from RapidAPI' });
+  apiReq.on('error', (err) => {
+    console.error("Error fetching SeatGeek events:", err);
+    res.status(500).json({ error: 'Failed to fetch SeatGeek events' });
   });
 
-  request.end();
+  apiReq.end();
 };
-
 
 
 
 exports.createEvent = async (req, res) => {
   try {
-    const { title, description, date } = req.body;
+    const { short_title, description, datetime_local}= req.body;
 
     if (!title || !description || !date) {
       return res.status(400).json({ error: 'Title, description, and date are required.' });
     }
 
-    const newEvent = { title, description, date };
+    const newEvent = { short_title, description, datetime_local };
     // Placeholder response — adjust this if you're saving to a database
     res.status(201).json({ event: newEvent });
   } catch (err) {

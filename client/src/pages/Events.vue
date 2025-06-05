@@ -9,12 +9,12 @@
       >
         <img :src="getEventImage(event)" alt="Event image" class="event-image" />
         <div class="event-details">
-          <h2 class="event-title">{{ event.name || event.title }}</h2>
+          <h2 class="event-title">{{ event.name || event.short_title }}</h2>
           <p class="event-description">
             {{ event.description || 'No description available.' }}
           </p>
           <p class="event-date">
-            📅 {{ formatDate(event.date || event.start_time) }}
+            📅 {{ formatDate(event.datetime_local || event.visible_at) }}
           </p>
           <button class="event-button">View Details</button>
         </div>
