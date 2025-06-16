@@ -8,13 +8,13 @@ import Register from './pages/Register.vue';
 
 
 const routes = [
-  { path: '/events', component: Events },
-  { path: '/rsvp', component: RSVP },
   { path: '/login', component: Login },
-  { path: '/create', component: CreateEvent },
   { path: '/register', component: Register },
-  { path: '/recommend', component: Recommendations }
-]
+  { path: '/events', component: Events, meta: { requiresAuth: true } },
+  { path: '/rsvp', component: RSVP, meta: { requiresAuth: true } },
+  { path: '/create', component: CreateEvent, meta: { requiresAuth: true } },
+  { path: '/recommend', component: Recommendations, meta: { requiresAuth: true } }
+];
 
 const router = createRouter({
   history: createWebHistory(),
