@@ -1,23 +1,20 @@
 <template>
-  <div class="register-page">
-    <div class="register-card">
-      <h1>Register</h1>
-      <form @submit.prevent="handleRegister">
-        <div class="input-group">
-          <input type="text" v-model="name" placeholder="Name" required />
-        </div>
+  <div class="login-page">
+    <div class="login-card">
+      <h1>Log In</h1>
+      <form @submit.prevent="handleLogin">
         <div class="input-group">
           <input type="email" v-model="email" placeholder="Email" required />
         </div>
         <div class="input-group">
           <input type="password" v-model="password" placeholder="Password" required />
         </div>
-        <button type="submit">Register</button>
+        <button type="submit">Login</button>
       </form>
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       <p>
-        Already have an account?
-        <router-link to="/login">Login</router-link>
+        Don't have an account?
+        <router-link to="/register">Register</router-link>
       </p>
     </div>
   </div>
@@ -25,47 +22,38 @@
 
 <script>
 export default {
-  name: "Register",
+  name: "Login",
   data() {
     return {
-      name: "",
       email: "",
       password: "",
       errorMessage: ""
     };
   },
   methods: {
-    async handleRegister() {
+    async handleLogin() {
       this.errorMessage = "";
       try {
-        const response = await fetch(`http://localhost:3000/api/users/register`, {
+        const response = await fetch(`http://localhost:3000/api/users/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            name: this.name,
-            email: this.email,
-            password: this.password
-          })
+          body: JSON.stringify({ email: this.email, password: this.password })
         });
 
-        const contentType = response.headers.get("content-type");
-        let responseData = {};
-
-        if (contentType && contentType.includes("application/json")) {
-          responseData = await response.json();
-        }
-
         if (!response.ok) {
-          this.errorMessage = responseData?.error || "Registration failed. Please try again.";
+          const errorData = await response.json().catch(() => null);
+          this.errorMessage = errorData?.message || "Login failed. Please check your credentials.";
           return;
         }
 
-        this.$router.push("/login");
+        const data = await response.json();
+        localStorage.setItem("user", JSON.stringify(data));
+        this.$router.push("/");
       } catch (error) {
-        console.error("Registration error:", error);
-        this.errorMessage = "An error occurred during registration. Please try again later.";
+        this.errorMessage = "An error occurred during login. Please try again later.";
+        console.error(error);
       }
     }
   }
@@ -73,7 +61,7 @@ export default {
 </script>
 
 <style scoped>
-.register-page {
+.login-page {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -81,7 +69,7 @@ export default {
   background: #0d0d1a;
 }
 
-.register-card {
+.login-card {
   background: #1e1e2f;
   padding: 2rem;
   border-radius: 12px;
@@ -90,7 +78,7 @@ export default {
   width: 320px;
 }
 
-.register-card h1 {
+.login-card h1 {
   text-align: center;
   margin-bottom: 1rem;
 }
