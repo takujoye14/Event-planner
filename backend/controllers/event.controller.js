@@ -62,3 +62,47 @@ exports.createEvent = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+// GET /api/events/:id
+exports.getEventById = (req, res) => {
+  const eventId = req.params.id;
+  const clientId = process.env.SEATGEEK_CLIENT_ID;
+  const clientSecret = process.env.SEATGEEK_CLIENT_SECRET;
+
+  const options = {
+    hostname: 'api.seatgeek.com',
+    port: 443,
+    path: `/2/events/${eventId}?client_id=${clientId}&client_secret=${clientSecret}`,
+    method: 'GET'
+  };
+
+  const apiReq = https.request(options, (apiRes) => {
+    let data = '';
+
+    apiRes.on('data', (chunk) => {
+      data += chunk;
+    });
+
+    apiRes.on('end', () => {
+      try {
+        const jsonData = JSON.parse(data);
+        if (jsonData.id) {
+          res.json({ event: jsonData });
+        } else {
+          console.warn(`⚠️ Event ${eventId} not found in SeatGeek`);
+          res.status(404).json({ error: 'Event not found in SeatGeek' });
+        }
+      } catch (err) {
+        console.error("❌ Error parsing SeatGeek event:", err.message);
+        res.status(500).json({ error: 'Failed to parse SeatGeek event' });
+      }
+    });
+  });
+
+  apiReq.on('error', (err) => {
+    console.error("❌ Error fetching SeatGeek event by ID:", err.message);
+    res.status(500).json({ error: 'Failed to fetch event from SeatGeek' });
+  });
+
+  apiReq.end();
+};

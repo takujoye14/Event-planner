@@ -1,4 +1,5 @@
 const { neo4jDriver } = require('../config/neo4j');
+const User = require('../models/User'); // Make sure this is imported
 
 // POST /api/users/follow
 exports.followUser = async (req, res) => {
@@ -108,5 +109,16 @@ exports.getFollowers = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch followers' });
   } finally {
     await session.close();
+  }
+};
+
+// GET /api/users/allUsers
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}, '_id name email'); // Limit fields if needed
+    res.json({ users });
+  } catch (err) {
+    console.error('❌ Get all users error:', err.message);
+    res.status(500).json({ error: 'Failed to fetch users' });
   }
 };

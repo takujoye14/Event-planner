@@ -34,7 +34,7 @@ export default {
     async handleLogin() {
       this.errorMessage = "";
       try {
-        const response = await fetch(`http://localhost:3000/api/users/login`, {
+        const response = await fetch(`http://localhost:3000/api/auth/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -49,7 +49,8 @@ export default {
         }
 
         const data = await response.json();
-        localStorage.setItem("user", JSON.stringify(data));
+        localStorage.setItem("user", JSON.stringify(data.user));
+        this.$emit("login-success", data.user);
         this.$router.push("/");
       } catch (error) {
         this.errorMessage = "An error occurred during login. Please try again later.";

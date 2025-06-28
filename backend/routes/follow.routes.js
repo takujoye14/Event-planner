@@ -5,5 +5,6 @@ router.post('/follow', controller.followUser);
 router.post('/unfollow', controller.unfollowUser);
 router.get('/following', controller.getFollowing);
 router.get('/followers', controller.getFollowers);
+router.get('/allUsers', controller.getAllUsers); // ✅ route: /allUsers
 
 module.exports = router;

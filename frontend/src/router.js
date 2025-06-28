@@ -9,7 +9,7 @@ import About from './pages/About.vue'
 import Home from './pages/Home.vue'
 import Contact from './pages/Contact.vue'
 import Users from './pages/Users.vue'
-
+import Profile from './pages/Profile.vue'
 
 const routes = [
   { path: '/events', component: Events },
@@ -21,7 +21,8 @@ const routes = [
   { path: '/',  component: Home },
   { path: '/about', component: About},
   { path: '/contact',  component: Contact},
-  {path: '/users', component: Users}
+  {path: '/users', component: Users},
+  { path: '/profile', component: Profile, meta: { requiresAuth: true } }
 ]
 
 const router = createRouter({

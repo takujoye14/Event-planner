@@ -57,6 +57,12 @@
           >
             View Tickets
           </a>
+
+          <!-- RSVP Buttons -->
+          <div class="rsvp-buttons" v-if="user">
+            <button @click="rsvpToEvent(event.id, 'interested')">Interested</button>
+            <button @click="rsvpToEvent(event.id, 'going')">Going</button>
+          </div>
         </div>
       </div>
     </div>
@@ -87,6 +93,7 @@ export default {
   name: "Events",
   data() {
     return {
+      user: JSON.parse(localStorage.getItem('user')),
       events: [],
       selectedCategory: 'All',
       selectedSubcategory: '',
@@ -105,7 +112,6 @@ export default {
   methods: {
     async fetchEvents() {
       this.loading = true;
-      console.log('🔍 Fetching events...');
       const base = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
       let q = '';
@@ -113,24 +119,27 @@ export default {
         q = this.selectedCategory;
       }
 
-      // Add subcategory only if sports is selected
       if (this.selectedCategory === 'Sports' && this.selectedSubcategory) {
         q = this.selectedSubcategory;
       }
 
       const url = `${base}/events?page=${this.currentPage}&per_page=${this.itemsPerPage}&q=${encodeURIComponent(q)}`;
-      console.log(`🛰️ API URL: ${url}`);
+      console.log(`🔍 Fetching from: ${url}`);
 
       try {
         const res = await fetch(url);
         if (!res.ok) throw new Error("Failed to fetch events");
 
         const data = await res.json();
-        console.log('✅ API Response:', data);
+        console.log("✅ Event API response:", data);
 
-        this.events = data.events || [];
-        this.totalPages = Math.max(1, Math.ceil((data.meta?.total || this.events.length) / this.itemsPerPage));
-        console.log(`📄 Total Pages: ${this.totalPages}`);
+        // Some APIs return an object with { events: [...] }, others just return the array directly
+        this.events = Array.isArray(data) ? data : (data.events || []);
+        console.log("🎟️ Loaded events:", this.events);
+
+        const totalCount = data.meta?.total || this.events.length;
+        this.totalPages = Math.max(1, Math.ceil(totalCount / this.itemsPerPage));
+        console.log(`📄 Total pages: ${this.totalPages}`);
       } catch (err) {
         console.error('❌ Error loading events:', err);
         this.events = [];
@@ -140,14 +149,12 @@ export default {
       }
     },
     selectCategory(category) {
-      console.log(`📌 Selected Category: ${category}`);
       this.selectedCategory = category;
       this.selectedSubcategory = '';
       this.currentPage = 1;
       this.fetchEvents();
     },
     selectSubcategory(subcategory) {
-      console.log(`📌 Selected Subcategory: ${subcategory}`);
       this.selectedSubcategory = subcategory;
       this.currentPage = 1;
       this.fetchEvents();
@@ -155,14 +162,12 @@ export default {
     nextPage() {
       if (this.currentPage < this.totalPages) {
         this.currentPage++;
-        console.log(`➡️ Next Page: ${this.currentPage}`);
         this.fetchEvents();
       }
     },
     prevPage() {
       if (this.currentPage > 1) {
         this.currentPage--;
-        console.log(`⬅️ Previous Page: ${this.currentPage}`);
         this.fetchEvents();
       }
     },
@@ -170,6 +175,30 @@ export default {
       if (!date) return "Date not available";
       const d = new Date(date);
       return d.toDateString();
+    },
+    async rsvpToEvent(eventId, status) {
+      if (!this.user) return alert("You must be logged in to RSVP.");
+
+      try {
+        const res = await fetch("http://localhost:3000/api/rsvp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            userId: this.user._id,
+            eventId,
+            status
+          })
+        });
+
+        if (!res.ok) throw new Error("Failed to RSVP");
+
+        alert(`✅ RSVP saved as "${status}"`);
+      } catch (err) {
+        console.error("❌ Failed to RSVP:", err);
+        alert("RSVP failed. Try again.");
+      }
     }
   },
   mounted() {
@@ -194,7 +223,6 @@ export default {
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-/* Filter Buttons */
 .filter-buttons,
 .subcategory-buttons {
   display: flex;
@@ -224,7 +252,6 @@ export default {
   color: #1e1e2f;
 }
 
-/* Event Grid */
 .events-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -274,7 +301,28 @@ export default {
   background-color: #e1b40d;
 }
 
-/* Pagination Controls */
+.rsvp-buttons {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.8rem;
+}
+
+.rsvp-buttons button {
+  background-color: #444;
+  color: #fff;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.rsvp-buttons button:hover {
+  background-color: #ffcc00;
+  color: #1e1e2f;
+}
+
 .pagination-controls {
   display: flex;
   justify-content: center;
