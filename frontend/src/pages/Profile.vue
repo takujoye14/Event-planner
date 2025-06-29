@@ -3,8 +3,11 @@
     <h1>{{ user.name }}'s Profile</h1>
     <p><strong>Email:</strong> {{ user.email }}</p>
 
-    <h2>My RSVPs</h2>
-    <div v-if="events.length > 0" class="events-grid">
+    <h2>My Events</h2>
+    <div v-if="loadingEvents" class="spinner-container">
+      <div class="spinner"></div>
+    </div>
+    <div v-else-if="events.length > 0" class="events-grid">
       <div v-for="event in events" :key="event.id" class="event-card">
         <div class="event-details">
           <h2 class="event-title">{{ event.short_title || event.name }}</h2>
@@ -16,22 +19,28 @@
         </div>
       </div>
     </div>
-    <p v-else>No RSVPs yet.</p>
+    <p v-else>No events registered yet.</p>
 
     <h2>Following</h2>
-    <ul>
-      <li v-for="fid in following" :key="fid">
-        {{ getUserNameById(fid) }}
-        <button @click="unfollow(fid)">Unfollow</button>
-      </li>
-    </ul>
+    <div v-if="following.length > 0">
+      <ul>
+        <li v-for="fid in following" :key="fid">
+          {{ getUserNameById(fid) }}
+          <button @click="unfollow(fid)">Unfollow</button>
+        </li>
+      </ul>
+    </div>
+    <p v-else>You are not following anyone yet.</p>
 
     <h2>Followers</h2>
-    <ul>
-      <li v-for="fid in followers" :key="fid">
-        {{ getUserNameById(fid) }}
-      </li>
-    </ul>
+    <div v-if="followers.length > 0">
+      <ul>
+        <li v-for="fid in followers" :key="fid">
+          {{ getUserNameById(fid) }}
+        </li>
+      </ul>
+    </div>
+    <p v-else>No followers yet.</p>
 
     <h2>Find Users to Follow</h2>
     <div class="search-container" @click.stop>
@@ -42,12 +51,7 @@
         @input="showDropdown = true"
       />
       <ul v-if="showDropdown && filteredUsers.length > 0" class="dropdown">
-        <li
-          v-for="u in filteredUsers"
-          :key="u._id"
-          v-if="user && u._id !== user._id && !following.includes(u._id)"
-          class="dropdown-item"
-        >
+        <li v-for="u in filteredUsers" :key="u._id" class="dropdown-item">
           <span>{{ u.name || 'Unnamed' }} ({{ u.email || 'No email' }})</span>
           <button @click="follow(u._id)">Follow</button>
         </li>
@@ -67,9 +71,6 @@ export default {
     const storedUser = localStorage.getItem("user");
     const parsedUser = storedUser ? JSON.parse(storedUser) : null;
 
-    console.log("👤 user from localStorage:", storedUser);
-    console.log("🧠 parsed user:", parsedUser);
-
     return {
       user: parsedUser,
       rsvps: [],
@@ -79,21 +80,26 @@ export default {
       allUsers: [],
       searchTerm: "",
       showDropdown: false,
+      loadingEvents: true
     };
   },
   computed: {
     filteredUsers() {
-      if (!this.user || !this.user._id) return []; // 🛡️ Prevents crash
+      if (!this.user || !this.user._id) return [];
       return this.allUsers.filter(u => {
-        if (!u || !u._id || u._id === this.user._id || this.following.includes(u._id)) return false;
-        const name = (u.name || "").toLowerCase();
-        const email = (u.email || "").toLowerCase();
-        return name.includes(this.searchTerm.toLowerCase()) ||
-              email.includes(this.searchTerm.toLowerCase());
+        return (
+          u &&
+          u._id &&
+          u._id !== this.user._id &&
+          !this.following.includes(u._id) &&
+          (
+            (u.name || '').toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+            (u.email || '').toLowerCase().includes(this.searchTerm.toLowerCase())
+          )
+        );
       });
     }
   },
-
   methods: {
     hideDropdownOutside() {
       this.showDropdown = false;
@@ -113,6 +119,7 @@ export default {
     },
     async fetchRSVPs() {
       const base = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+      this.loadingEvents = true;
       try {
         const res = await fetch(`${base}/rsvp/user?userId=${this.user._id}`);
         const data = await res.json();
@@ -131,6 +138,8 @@ export default {
         }
       } catch (err) {
         console.error("❌ Error fetching RSVPs:", err);
+      } finally {
+        this.loadingEvents = false;
       }
     },
     async fetchFollowersAndFollowing() {
@@ -326,5 +335,24 @@ button {
 }
 button:hover {
   background-color: #e1b40d;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 5px solid rgba(255, 204, 0, 0.3);
+  border-top: 5px solid #ffcc00;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

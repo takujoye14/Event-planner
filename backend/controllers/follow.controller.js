@@ -1,7 +1,7 @@
 const { neo4jDriver } = require('../config/neo4j');
 const User = require('../models/User'); // Make sure this is imported
+const { sendNotification } = require('../utils/notifications');
 
-// POST /api/users/follow
 exports.followUser = async (req, res) => {
   const { followerId, followeeId } = req.body;
 
@@ -20,6 +20,21 @@ exports.followUser = async (req, res) => {
       `,
       { followerId, followeeId }
     );
+
+    // Load follower info from MongoDB
+    const follower = await User.findById(followerId).select('name email');
+    if (!follower) {
+      console.warn('⚠️ Follower not found in MongoDB');
+    } else {
+      const message = `${follower.name} started following you.`;
+      await sendNotification(followeeId, {
+        type: 'follow',
+        message,
+        from: followerId,
+        timestamp: Date.now(),
+      });
+      console.log(`🔔 Notification sent to ${followeeId}: ${message}`);
+    }
 
     res.status(200).json({ message: 'User followed successfully' });
   } catch (err) {

@@ -2,6 +2,10 @@
   <div class="events-page">
     <h1 class="page-title">Discover Events</h1>
 
+    <div v-if="loading" class="loading-spinner">
+      <div class="spinner"></div>
+    </div>
+
     <!-- Filter Buttons -->
     <div class="filter-buttons">
       <button
@@ -356,4 +360,26 @@ export default {
   font-size: 1rem;
   color: #cccccc;
 }
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 5px solid rgba(255, 204, 0, 0.3);
+  border-top: 5px solid #ffcc00;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 </style>

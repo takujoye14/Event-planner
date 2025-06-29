@@ -5,6 +5,7 @@ const cors = require('cors');
 const connectMongo = require('./config/mongo');
 const { redisClient, connectRedis } = require('./config/redis');
 const { neo4jDriver, connectNeo4j } = require('./config/neo4j');
+const { scheduleReminders } = require('./jobs/reminderScheduler');
 
 const app = express();
 
@@ -17,6 +18,9 @@ app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/events', require('./routes/event.routes'));
 app.use('/api/rsvp', require('./routes/rsvp.routes'));
 app.use('/api/users', require('./routes/follow.routes'));
+app.use('/api/notifications', require('./routes/notification.routes'));
+
+scheduleReminders();
 
 // Health check route
 app.get('/', (req, res) => {

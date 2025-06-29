@@ -16,7 +16,7 @@
     "express": "^5.1.0",
     "mongoose": "^8.15.0",
     "neo4j-driver": "^5.28.1",
-    "node-cron": "^4.0.5",
+    "node-cron": "^4.1.1",
     "redis": "^5.1.0"
   },
   "devDependencies": {
